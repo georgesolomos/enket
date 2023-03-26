@@ -45,41 +45,62 @@ func (p *Parser) Parse() {
 
 	records := make(chan []string)
 	go p.getNem12Records(nemReader, records)
-	// Specifies the rules for the 300-500 blocks to be read for the 200 record
+	// Keep track of the current 200 record because it specifies the rules for the subsequent 300 blocks
 	var currentDetails *NMIDataDetailsRecord
+	// Keep track of the current 300 record because it needs to be adjusted for any subsequent 400 blocks
+	var currentInterval *IntervalDataRecord
+	// Keep track of whether we're currently adjusting a 300 record. Any number of 400 records can come
+	// after a 300 to adjust different parts of it.
+	adjustingInterval := false
+	data := make(map[NMI]map[ReadingType]HourlyReading)
 	for record := range records {
 		if len(record) == 0 {
 			continue
 		}
-		p.logger.Debug(fmt.Sprintf("%v", record))
 		recordIndicator, err := strconv.Atoi(record[0])
 		if err != nil {
 			p.logger.Warn("Could not parse record indicator - moving to next line")
 		}
 		switch recordIndicator {
 		case 200: // Data details
+			adjustingInterval = false
 			currentDetails, err = p.parse200Record(record)
 			if err != nil {
 				p.logger.Error(err.Error())
 				return
 			}
-			p.logger.Info("Parsed 200 record", slog.Any("record", currentDetails))
+			hourlyReading := p.nem12IntervalToHourlyReading(currentInterval)
+			intervalMap := map[ReadingType]HourlyReading{ReadingType(currentDetails.NMISuffix): hourlyReading}
+			data[NMI(currentDetails.NMI)] = intervalMap
+			p.logger.Debug("Parsed 200 record", slog.Any("record", currentDetails))
 		case 300: // Interval data
-			data, err := p.parse300Record(record, currentDetails)
+			if adjustingInterval {
+				data[NMI(currentDetails.NMI)][ReadingType(currentDetails.NMISuffix)] = p.nem12IntervalToHourlyReading(currentInterval)
+				adjustingInterval = false
+			}
+			currentInterval, err := p.parse300Record(record, currentDetails)
 			if err != nil {
 				p.logger.Error(err.Error())
 				return
 			}
-			p.logger.Info("Parsed 300 record", slog.Any("record", data))
+			p.logger.Debug("Parsed 300 record", slog.Any("record", currentInterval))
 		case 400: // Interval event
-			data, err := p.parse400Record(record, currentDetails)
+			adjustingInterval = true
+			event, err := p.parse400Record(record, currentDetails)
 			if err != nil {
 				p.logger.Error(err.Error())
 				return
 			}
-			p.logger.Info("Parsed 400 record", slog.Any("record", data))
+			p.adjustInterval(currentInterval, event)
+			p.logger.Debug("Parsed 400 record", slog.Any("record", event))
+		case 500: // B2B details
+			// This is a manual reading that provides the total recorded accumulated energy for a
+			// Datastream retrieved from a meter’s register at the time of collection. It doesn't
+			// really serve our purposes so we ignore it.
 		case 900: // End of data
 			return
+		default:
+			p.logger.Warn(fmt.Sprintf("Unrecognised record indicator: %v", recordIndicator))
 		}
 	}
 }
@@ -91,16 +112,6 @@ func (p *Parser) parse200Record(record []string) (*NMIDataDetailsRecord, error) 
 		return nil, errors.New("interval length cannot be parsed")
 	}
 
-	// Optional field
-	nextScheduledReadDate := time.Time{}
-	if record[9] != "" {
-		nextScheduledReadDate, err = time.Parse("20060102", record[9])
-		if err != nil {
-			// If we can't parse the date, log it and move on since the field is optional anyway
-			p.logger.Warn("parse200Record: next scheduled read date cannot be parsed")
-		}
-	}
-
 	return &NMIDataDetailsRecord{
 		NMI:                     record[1],
 		NMIConfiguration:        record[2],
@@ -110,7 +121,7 @@ func (p *Parser) parse200Record(record []string) (*NMIDataDetailsRecord, error) 
 		MeterSerialNumber:       record[6],
 		UOM:                     record[7],
 		IntervalLength:          intervalLength,
-		NextScheduledReadDate:   nextScheduledReadDate,
+		// We don't care about NextScheduledReadDate
 	}, nil
 }
 
@@ -129,7 +140,7 @@ func (p *Parser) parse300Record(record []string, currentDetails *NMIDataDetailsR
 		return nil, errors.New("not enough interval values")
 	}
 
-	vals := []float64{}
+	vals := []IntervalValue{}
 	for _, val := range record[2 : numIntervalVals+2] {
 		valFlt, err := strconv.ParseFloat(val, 64)
 		if err != nil {
@@ -137,7 +148,7 @@ func (p *Parser) parse300Record(record []string, currentDetails *NMIDataDetailsR
 			p.logger.Warn("parse300Record: interval value cannot be parsed")
 			valFlt = 0
 		}
-		vals = append(vals, valFlt)
+		vals = append(vals, IntervalValue{Value: valFlt})
 	}
 
 	reasonCode, err := strconv.Atoi(record[idxAfterIntervalVals+1])
@@ -151,11 +162,28 @@ func (p *Parser) parse300Record(record []string, currentDetails *NMIDataDetailsR
 		QualityMethod:     record[idxAfterIntervalVals],
 		ReasonCode:        reasonCode,
 		ReasonDescription: record[idxAfterIntervalVals+2],
+		// We don't care about UpdateDateTime and MSATSLoadDateTime
 	}, nil
 }
 
 func (p *Parser) parse400Record(record []string, currentDetails *NMIDataDetailsRecord) (*IntervalEventRecord, error) {
 	return &IntervalEventRecord{}, nil
+}
+
+func (p *Parser) adjustInterval(currentInterval *IntervalDataRecord, event *IntervalEventRecord) {
+	quality := QualityData{
+		QualityMethod:     event.QualityMethod,
+		ReasonCode:        event.ReasonCode,
+		ReasonDescription: event.ReasonDescription,
+	}
+	// Intervals are 1-indexed and closed
+	for i := event.StartInterval; i <= event.EndInterval; i++ {
+		currentInterval.IntervalValues[i+1].Quality = &quality
+	}
+}
+
+func (p *Parser) nem12IntervalToHourlyReading(currentInterval *IntervalDataRecord) HourlyReading {
+	return HourlyReading{}
 }
 
 func (p *Parser) checkNem12Header(nemReader *csv.Reader) (bool, error) {

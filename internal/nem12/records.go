@@ -28,12 +28,25 @@ type NMIDataDetailsRecord struct {
 // Interval data record (300)
 type IntervalDataRecord struct {
 	IntervalDate      time.Time
-	IntervalValues    []float64
+	IntervalValues    []IntervalValue
 	QualityMethod     string
 	ReasonCode        int
 	ReasonDescription string
 	UpdateDateTime    time.Time
 	MSATSLoadDateTime time.Time
+}
+
+type IntervalValue struct {
+	Value float64
+	// A 400 record can adjust the quality method, reason code, and reason description per-value,
+	// so we store those along with each value if applicable. Otherwise it's set to null.
+	Quality *QualityData
+}
+
+type QualityData struct {
+	QualityMethod     string
+	ReasonCode        int
+	ReasonDescription string
 }
 
 // Interval event record (400)

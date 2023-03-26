@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	slogOpts := slog.HandlerOptions{Level: slog.LevelInfo}.NewJSONHandler(os.Stdout)
+	slogOpts := slog.HandlerOptions{Level: slog.LevelDebug}.NewJSONHandler(os.Stdout)
 	logger := slog.New(slogOpts)
 	slog.SetDefault(logger)
 
