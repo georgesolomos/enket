@@ -1,5 +1,6 @@
 # Enket
-[![Go Report Card](https://goreportcard.com/badge/github.com/georgesolomos/enket)](https://goreportcard.com/report/github.com/georgesolomos/enket)
+[![Build](https://github.com/georgesolomos/enket/actions/workflows/go.yml/badge.svg)](https://github.com/georgesolomos/enket/actions/workflows/go.yml)
+[![Go Report](https://goreportcard.com/badge/github.com/georgesolomos/enket)](https://goreportcard.com/report/github.com/georgesolomos/enket)
 
 
 **Find the cheapest electricity provider for you**
