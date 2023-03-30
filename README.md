@@ -1,5 +1,5 @@
 # Enket
-[![Build](https://github.com/georgesolomos/enket/actions/workflows/go.yml/badge.svg)](https://github.com/georgesolomos/enket/actions/workflows/go.yml)
+[![CI](https://github.com/georgesolomos/enket/actions/workflows/ci.yml/badge.svg)](https://github.com/georgesolomos/enket/actions/workflows/ci.yml)
 [![Go Report](https://goreportcard.com/badge/github.com/georgesolomos/enket)](https://goreportcard.com/report/github.com/georgesolomos/enket)
 
 
