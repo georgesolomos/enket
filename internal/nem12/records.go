@@ -30,7 +30,7 @@ type IntervalDataRecord struct {
 	IntervalDate      time.Time
 	IntervalValues    []IntervalValue
 	QualityMethod     string
-	ReasonCode        int
+	ReasonCode        *int
 	ReasonDescription string
 	UpdateDateTime    time.Time
 	MSATSLoadDateTime time.Time
@@ -45,7 +45,7 @@ type IntervalValue struct {
 
 type QualityData struct {
 	QualityMethod     string
-	ReasonCode        int
+	ReasonCode        *int
 	ReasonDescription string
 }
 
@@ -54,7 +54,7 @@ type IntervalEventRecord struct {
 	StartInterval     int
 	EndInterval       int
 	QualityMethod     string
-	ReasonCode        int
+	ReasonCode        *int
 	ReasonDescription string
 }
 

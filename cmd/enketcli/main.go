@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"os"
 
@@ -10,7 +11,7 @@ import (
 )
 
 func main() {
-	slogOpts := slog.HandlerOptions{Level: slog.LevelDebug}.NewJSONHandler(os.Stdout)
+	slogOpts := slog.HandlerOptions{Level: slog.LevelInfo}.NewJSONHandler(os.Stdout)
 	logger := slog.New(slogOpts)
 	slog.SetDefault(logger)
 
@@ -29,5 +30,12 @@ func main() {
 	defer nem12File.Close()
 
 	parser := nem12.NewParser(logger, nem12File)
-	parser.Parse()
+	nem12Data, err := parser.Parse()
+
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
+	js, _ := json.Marshal(nem12Data)
+	logger.Info(string(js))
 }

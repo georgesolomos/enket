@@ -16,27 +16,24 @@ const (
 	SecondaryExport ReadingType = "B2"
 )
 
-type EnergyUnit string
-
-const (
-	MWh EnergyUnit = "MWH"
-	KWh EnergyUnit = "KWH"
-	Wh  EnergyUnit = "WH"
-)
-
-type UsageData struct {
-	NMI            NMI
-	NMISuffix      ReadingType
-	HourlyReadings []HourlyReading
+func IsValidReadingType(val string) bool {
+	switch val {
+	case string(GeneralUsage), string(ControlledLoad), string(PrimaryExport), string(SecondaryExport):
+		return true
+	default:
+		return false
+	}
 }
 
 type HourlyReading struct {
 	StartTime time.Time
 	EndTime   time.Time
-	// We don't support reactive measurements (e.g. kVarh). They're not as applicable to consumer
-	// power usage and billing, and we'd need the power factor to calculate kWh.
-	Energy            float64
-	QualityMethod     string
-	ReasonCode        int
-	ReasonDescription string
+	EnergyKWh float64
+	// The hourly reading can consist of multiple measurements with different quality methods and
+	// reason codes/descriptions so we include them all here
+	QualityMethod     []string
+	ReasonCode        []int
+	ReasonDescription []string
 }
+
+type UsageData map[NMI]map[ReadingType][]HourlyReading
