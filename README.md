@@ -1,6 +1,6 @@
 # Enket
-[![CI](https://github.com/georgesolomos/enket/actions/workflows/ci.yml/badge.svg)](https://github.com/georgesolomos/enket/actions/workflows/ci.yml)
-[![Go Report](https://goreportcard.com/badge/github.com/georgesolomos/enket)](https://goreportcard.com/report/github.com/georgesolomos/enket)
+[![build](https://github.com/georgesolomos/enket/actions/workflows/build.yml/badge.svg)](https://github.com/georgesolomos/enket/actions/workflows/build.yml)
+[![go report](https://goreportcard.com/badge/github.com/georgesolomos/enket)](https://goreportcard.com/report/github.com/georgesolomos/enket)
 
 
 **Find the cheapest electricity provider for you**
