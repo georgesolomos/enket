@@ -1,0 +1,7 @@
+# github.com/deepmap/oapi-codegen configuration
+package: cdsenergy
+generate:
+  client: true
+  models: true
+  embedded-spec: true
+output: cdsenergy.gen.go
