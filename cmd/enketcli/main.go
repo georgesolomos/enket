@@ -41,7 +41,7 @@ func main() {
 	}
 
 	fetcher := energyplan.NewPlanFetcher(logger)
-	plan, err := fetcher.FetchPlan("amber", "AMB397318MR@VEC")
+	plan, err := fetcher.FetchPlan("energy-locals", "LCL526936MRE4@EME")
 	if err != nil {
 		logger.Error(err.Error())
 	}
