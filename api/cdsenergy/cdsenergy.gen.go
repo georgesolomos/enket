@@ -2823,7 +2823,10 @@ type EnergyPlanContractFull struct {
 	} `json:"controlledLoad,omitempty"`
 
 	// CoolingOffDays Number of days in the cooling off period for the contract.  Mandatory for plans with type of MARKET
-	CoolingOffDays *int `json:"coolingOffDays,omitempty"`
+	// Note: This was originally an *int but I changed it to a *json.Number because some providers
+	// send through a string. json.Number accepts both ints and strings as a "feature".
+	// https://github.com/golang/go/issues/34472
+	CoolingOffDays *json.Number `json:"coolingOffDays,omitempty"`
 
 	// Discounts Optional list of discounts available for the contract
 	Discounts *[]struct {
@@ -3255,7 +3258,10 @@ type EnergyPlanContractFullAllOf struct {
 	BillFrequency []string `json:"billFrequency"`
 
 	// CoolingOffDays Number of days in the cooling off period for the contract.  Mandatory for plans with type of MARKET
-	CoolingOffDays *int `json:"coolingOffDays,omitempty"`
+	// Note: This was originally an *int but I changed it to a *json.Number because some providers
+	// send through a string. json.Number accepts both ints and strings as a "feature".
+	// https://github.com/golang/go/issues/34472
+	CoolingOffDays *json.Number `json:"coolingOffDays,omitempty"`
 
 	// MeterTypes An array of the meter types that this contract is available for
 	MeterTypes *[]string `json:"meterTypes,omitempty"`
