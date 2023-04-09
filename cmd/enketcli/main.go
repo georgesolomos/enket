@@ -1,10 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/georgesolomos/enket/internal/energyplan"
 	"github.com/georgesolomos/enket/internal/nem12"
@@ -13,6 +14,7 @@ import (
 )
 
 func main() {
+	start := time.Now()
 	slogOpts := slog.HandlerOptions{Level: slog.LevelInfo}.NewJSONHandler(os.Stdout)
 	logger := slog.New(slogOpts)
 	slog.SetDefault(logger)
@@ -37,14 +39,28 @@ func main() {
 		logger.Error(err.Error())
 	}
 	for k := range nem12Data {
-		logger.Info(fmt.Sprintf("%v", k))
+		logger.Info(fmt.Sprintf("NMI %v parsed", k))
 	}
+	parsingDone := time.Now()
 
-	fetcher := energyplan.NewPlanFetcher(logger)
-	plan, err := fetcher.FetchPlan("energy-locals", "LCL526936MRE4@EME")
+	fetcher, err := energyplan.NewPlanFetcher(logger, "energy-locals")
 	if err != nil {
 		logger.Error(err.Error())
 	}
-	js, _ := json.Marshal(plan)
-	logger.Info(string(js))
+
+	plans, err := fetcher.FetchAllPlans()
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	planListDone := time.Now()
+
+	_, err = fetcher.FetchPlan(plans[0].PlanId)
+	if err != nil {
+		logger.Error(err.Error())
+	}
+	planDetailDone := time.Now()
+
+	logger.Info(fmt.Sprintf("Fetched %v plans", strconv.Itoa(len(plans))))
+	logger.Info(fmt.Sprintf("Parsing took %v, fetching all plans took %v, fetching plan details took %v",
+		parsingDone.Sub(start), planListDone.Sub(parsingDone), planDetailDone.Sub(planListDone)))
 }
