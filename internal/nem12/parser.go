@@ -26,7 +26,7 @@ func NewParser(logger *slog.Logger, file *os.File) *Parser {
 	}
 }
 
-func (p *Parser) Parse() (UsageData, error) {
+func (p *Parser) Parse() (*UsageData, error) {
 	nemReader := p.createNemReader(p.file)
 	hasHeader, err := p.checkNem12Header(nemReader)
 	if err != nil {
@@ -82,7 +82,7 @@ func (p *Parser) Parse() (UsageData, error) {
 			finalise300()
 			current200, err = p.parse200Record(record)
 			if err != nil {
-				return data, err
+				return nil, err
 			}
 			if !IsValidReadingType(current200.NMISuffix) {
 				p.logger.Error(fmt.Sprintf("200 record has unsupported suffix %v. Skipping block.", current200.NMISuffix))
@@ -103,7 +103,7 @@ func (p *Parser) Parse() (UsageData, error) {
 			finalise300()
 			current300, err = p.parse300Record(record, current200)
 			if err != nil {
-				return data, err
+				return nil, err
 			}
 			p.logger.Debug("Parsed 300 record", slog.Any("record", current300))
 		case 400: // Interval event
@@ -112,7 +112,7 @@ func (p *Parser) Parse() (UsageData, error) {
 			}
 			event, err := p.parse400Record(record, current200)
 			if err != nil {
-				return data, err
+				return nil, err
 			}
 			p.adjustInterval(current300, event)
 			p.logger.Debug("Parsed 400 record", slog.Any("record", event))
@@ -123,13 +123,13 @@ func (p *Parser) Parse() (UsageData, error) {
 			continue
 		case 900: // End of data
 			finalise300()
-			return data, nil
+			return &data, nil
 		default:
 			p.logger.Warn(fmt.Sprintf("Unrecognised record indicator: %v", recordIndicator))
 		}
 	}
 	p.logger.Warn("Missing 900 record")
-	return data, nil
+	return &data, nil
 }
 
 func (p *Parser) createNemReader(file *os.File) *csv.Reader {
