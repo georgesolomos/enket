@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "cmd/enketcli/main.go",
-            "args": ["-nem12path", "/home/george/enket-data/test.csv"]
+            "args": ["-nem12path", "/home/george/enket-data/usage-full.csv"]
         }
     ]
 }

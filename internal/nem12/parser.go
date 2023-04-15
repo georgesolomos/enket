@@ -26,7 +26,7 @@ func NewParser(logger *slog.Logger, file *os.File) *Parser {
 	}
 }
 
-func (p *Parser) Parse() (*UsageData, error) {
+func (p *Parser) Parse() (UsageData, error) {
 	nemReader := p.createNemReader(p.file)
 	hasHeader, err := p.checkNem12Header(nemReader)
 	if err != nil {
@@ -123,13 +123,13 @@ func (p *Parser) Parse() (*UsageData, error) {
 			continue
 		case 900: // End of data
 			finalise300()
-			return &data, nil
+			return data, nil
 		default:
 			p.logger.Warn(fmt.Sprintf("Unrecognised record indicator: %v", recordIndicator))
 		}
 	}
 	p.logger.Warn("Missing 900 record")
-	return &data, nil
+	return data, nil
 }
 
 func (p *Parser) createNemReader(file *os.File) *csv.Reader {
@@ -146,7 +146,7 @@ func (p *Parser) checkNem12Header(nemReader *csv.Reader) (bool, error) {
 		return false, err
 	}
 	if record[0] != "100" {
-		p.logger.Info("No header record - assuming NEM12 format")
+		p.logger.Debug("No header record - assuming NEM12 format")
 		return false, nil
 	}
 	if record[1] != "NEM12" {

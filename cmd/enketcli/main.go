@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/georgesolomos/enket/internal/calculator"
 	"github.com/georgesolomos/enket/internal/energyplan"
@@ -35,14 +36,13 @@ func main() {
 	nem12Data, err := parser.Parse()
 	if err != nil {
 		logger.Error(err.Error())
-	}
-	for k := range *nem12Data {
-		logger.Info(fmt.Sprintf("NMI %v parsed", k))
+		os.Exit(1)
 	}
 
-	fetcher, err := energyplan.NewPlanFetcher(logger, "energy-locals")
+	fetcher, err := energyplan.NewPlanFetcher(logger, "origin")
 	if err != nil {
 		logger.Error(err.Error())
+		os.Exit(1)
 	}
 
 	// plans, err := fetcher.FetchAllPlans()
@@ -50,15 +50,21 @@ func main() {
 	// 	logger.Error(err.Error())
 	// }
 
-	plan, err := fetcher.FetchPlan("LCL526934MRE4@EME")
+	plan, err := fetcher.FetchPlan("ORI431087MRE6@EME")
+	if err != nil {
+		logger.Error(err.Error())
+		os.Exit(1)
+	}
+
+	calculator := calculator.NewCalculator(logger)
+	cost, err := calculator.CalculateMonthly(nem12Data, plan)
 	if err != nil {
 		logger.Error(err.Error())
 	}
 
-	calculator := calculator.NewCalculator(logger)
-	costs, err := calculator.CalculateMonthly(nem12Data, plan)
-	if err != nil {
-		logger.Error(err.Error())
+	var log strings.Builder
+	for _, c := range cost.AveragePerMonth {
+		log.WriteString(fmt.Sprintf("$%.2f, ", float64(c)/100))
 	}
-	logger.Info(fmt.Sprintf("Costs: %v", costs))
+	logger.Info(log.String())
 }
