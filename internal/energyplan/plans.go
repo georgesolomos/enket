@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/georgesolomos/enket/api/cdsenergy"
-	"golang.org/x/exp/slog"
 )
 
 type PlanFetcher struct {

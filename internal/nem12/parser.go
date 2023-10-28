@@ -5,13 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
-	"golang.org/x/exp/slog"
 )
 
 type Parser struct {

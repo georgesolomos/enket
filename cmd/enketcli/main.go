@@ -3,19 +3,18 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log/slog"
 	"os"
 	"strings"
 
 	"github.com/georgesolomos/enket/internal/calculator"
 	"github.com/georgesolomos/enket/internal/energyplan"
 	"github.com/georgesolomos/enket/internal/nem12"
-
-	"golang.org/x/exp/slog"
 )
 
 func main() {
-	slogOpts := slog.HandlerOptions{Level: slog.LevelInfo}.NewJSONHandler(os.Stdout)
-	logger := slog.New(slogOpts)
+	slogOpts := slog.HandlerOptions{Level: slog.LevelInfo}
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slogOpts))
 	slog.SetDefault(logger)
 
 	nem12Path := flag.String("nem12path", "", "The path to your NEM12 file")
@@ -49,8 +48,9 @@ func main() {
 	// if err != nil {
 	// 	logger.Error(err.Error())
 	// }
+	// logger.Debug(plans[0].PlanId)
 
-	plan, err := fetcher.FetchPlan("ORI431087MRE6@EME")
+	plan, err := fetcher.FetchPlan("ORI665084MRE2@EME")
 	if err != nil {
 		logger.Error(err.Error())
 		os.Exit(1)

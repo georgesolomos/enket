@@ -3,6 +3,7 @@ package calculator
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"strconv"
 	"time"
 
@@ -10,7 +11,6 @@ import (
 	"github.com/georgesolomos/enket/internal/nem12"
 	"github.com/georgesolomos/enket/internal/util"
 	"golang.org/x/exp/maps"
-	"golang.org/x/exp/slog"
 )
 
 type Calculator struct {
