@@ -2,6 +2,8 @@
 [![build](https://github.com/georgesolomos/enket/actions/workflows/build.yml/badge.svg)](https://github.com/georgesolomos/enket/actions/workflows/build.yml)
 [![go report](https://goreportcard.com/badge/github.com/georgesolomos/enket)](https://goreportcard.com/report/github.com/georgesolomos/enket)
 
+> [!WARNING]  
+> This repo is not complete or maintained.
 
 **Find the cheapest electricity provider for you**
 
